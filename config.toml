@@ -1,4 +1,4 @@
-baseURL = "https://jagijagijag1.github.io/tiny-note/"
+baseURL = "https://jagijagijag1.github.io/tiny-notes/"
 languageCode = "ja-jp"
 title = "jagijagijag1 tiny tech notes"
 theme = "hugo-theme-simple-blog"
