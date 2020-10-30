@@ -1,0 +1,82 @@
+<!doctype html><html lang=ja-jp><head><title>Pythonデコレータ - jagijagijag1 tiny tech notes</title><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel=stylesheet><link rel=stylesheet href=http://jagijagijag1.github.io/tiny-note/css/bootstrap.css><link rel=stylesheet href=http://jagijagijag1.github.io/tiny-note/css/custom.css></head><body><main id=main><div class=container><div class="row justify-content-center text-center my-5"><div class=col-lg-10><a href=http://jagijagijag1.github.io/tiny-note/categories/%E9%96%8B%E7%99%BA%E3%83%A1%E3%83%A2/ class="d-inline-block link-cta mb-4 text-uppercase">開発メモ</a><h1 class="mb-4 text-center">Pythonデコレータ</h1><p class="small mb-5 text-center"><span class=text-uppercase>May 20, 2020</span></p></div></div></div><div class="bg-skew bg-skew-light"><div class=container><div class="row justify-content-center"><div class=col-lg-8><article class=pb-2><ul><li><p><a href=https://qiita.com/_rdtr/items/d3bc1a8d4b7eb375c368>Pythonのデコレータを理解するための12Step - Qiita</a> の抜粋</p></li><li><p>クロージャで関数定義時の自分を囲むスコープの情報を記憶している</p><ul><li>そのため下記では定義した時点で与えた引数の情報を，関数実行時に与えなくても保持できる</li></ul></li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>outer</span>(x):
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>inner</span>():
+<span style=color:#f92672>...</span>         <span style=color:#66d9ef>print</span> x
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>return</span> inner
+<span style=color:#f92672>&gt;&gt;&gt;</span> print1 <span style=color:#f92672>=</span> outer(<span style=color:#ae81ff>1</span>)
+<span style=color:#f92672>&gt;&gt;&gt;</span> print2 <span style=color:#f92672>=</span> outer(<span style=color:#ae81ff>2</span>)
+<span style=color:#f92672>&gt;&gt;&gt;</span> print1()
+<span style=color:#ae81ff>1</span>
+<span style=color:#f92672>&gt;&gt;&gt;</span> print2()
+<span style=color:#ae81ff>2</span>
+</code></pre></div><ul><li>デコレータ=関数を引数にとり，引き換えに新たな関数を返すcallable(*)<ul><li>与えられた関数に，処理を追加した関数を返す</li></ul></li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>outer</span>(some_func):
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>inner</span>():
+<span style=color:#f92672>...</span>         <span style=color:#66d9ef>print</span> <span style=color:#e6db74>&#34;before some_func&#34;</span>
+<span style=color:#f92672>...</span>         ret <span style=color:#f92672>=</span> some_func() <span style=color:#75715e>#1</span>
+<span style=color:#f92672>...</span>         <span style=color:#66d9ef>return</span> ret <span style=color:#f92672>+</span> <span style=color:#ae81ff>1</span>
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>return</span> inner
+<span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>foo</span>():
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>1</span>
+<span style=color:#f92672>&gt;&gt;&gt;</span> decorated <span style=color:#f92672>=</span> outer(foo) <span style=color:#75715e>#2</span>
+<span style=color:#f92672>&gt;&gt;&gt;</span> decorated()
+before some_func
+<span style=color:#ae81ff>2</span>
+</code></pre></div><ul><li>座標オブジェクトに対して計算処理を後付したい場合</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>class</span> <span style=color:#a6e22e>Coordinate</span>(object):
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>def</span> __init__(self, x, y):
+<span style=color:#f92672>...</span>         self<span style=color:#f92672>.</span>x <span style=color:#f92672>=</span> x
+<span style=color:#f92672>...</span>         self<span style=color:#f92672>.</span>y <span style=color:#f92672>=</span> y
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>def</span> __repr__(self):
+<span style=color:#f92672>...</span>         <span style=color:#66d9ef>return</span> <span style=color:#e6db74>&#34;Coord: &#34;</span> <span style=color:#f92672>+</span> str(self<span style=color:#f92672>.</span>__dict__)
+<span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>add</span>(a, b):
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>return</span> Coordinate(a<span style=color:#f92672>.</span>x <span style=color:#f92672>+</span> b<span style=color:#f92672>.</span>x, a<span style=color:#f92672>.</span>y <span style=color:#f92672>+</span> b<span style=color:#f92672>.</span>y)
+<span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>sub</span>(a, b):
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>return</span> Coordinate(a<span style=color:#f92672>.</span>x <span style=color:#f92672>-</span> b<span style=color:#f92672>.</span>x, a<span style=color:#f92672>.</span>y <span style=color:#f92672>-</span> b<span style=color:#f92672>.</span>y)
+<span style=color:#f92672>&gt;&gt;&gt;</span> one <span style=color:#f92672>=</span> Coordinate(<span style=color:#ae81ff>100</span>, <span style=color:#ae81ff>200</span>)
+<span style=color:#f92672>&gt;&gt;&gt;</span> two <span style=color:#f92672>=</span> Coordinate(<span style=color:#ae81ff>300</span>, <span style=color:#ae81ff>200</span>)
+<span style=color:#f92672>&gt;&gt;&gt;</span> add(one, two)
+Coord: {<span style=color:#e6db74>&#39;y&#39;</span>: <span style=color:#ae81ff>400</span>, <span style=color:#e6db74>&#39;x&#39;</span>: <span style=color:#ae81ff>400</span>}
+
+<span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>wrapper</span>(func):
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>checker</span>(a, b):
+<span style=color:#f92672>...</span>         <span style=color:#66d9ef>if</span> a<span style=color:#f92672>.</span>x <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>or</span> a<span style=color:#f92672>.</span>y <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0</span>:
+<span style=color:#f92672>...</span>             a <span style=color:#f92672>=</span> Coordinate(a<span style=color:#f92672>.</span>x <span style=color:#66d9ef>if</span> a<span style=color:#f92672>.</span>x <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>0</span> <span style=color:#66d9ef>else</span> <span style=color:#ae81ff>0</span>, a<span style=color:#f92672>.</span>y <span style=color:#66d9ef>if</span> a<span style=color:#f92672>.</span>y <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>0</span> <span style=color:#66d9ef>else</span> <span style=color:#ae81ff>0</span>)
+<span style=color:#f92672>...</span>         <span style=color:#66d9ef>if</span> b<span style=color:#f92672>.</span>x <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>or</span> b<span style=color:#f92672>.</span>y <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0</span>:
+<span style=color:#f92672>...</span>             b <span style=color:#f92672>=</span> Coordinate(b<span style=color:#f92672>.</span>x <span style=color:#66d9ef>if</span> b<span style=color:#f92672>.</span>x <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>0</span> <span style=color:#66d9ef>else</span> <span style=color:#ae81ff>0</span>, b<span style=color:#f92672>.</span>y <span style=color:#66d9ef>if</span> b<span style=color:#f92672>.</span>y <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>0</span> <span style=color:#66d9ef>else</span> <span style=color:#ae81ff>0</span>)
+<span style=color:#f92672>...</span>         ret <span style=color:#f92672>=</span> func(a, b)
+<span style=color:#f92672>...</span>         <span style=color:#66d9ef>if</span> ret<span style=color:#f92672>.</span>x <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0</span> <span style=color:#f92672>or</span> ret<span style=color:#f92672>.</span>y <span style=color:#f92672>&lt;</span> <span style=color:#ae81ff>0</span>:
+<span style=color:#f92672>...</span>             ret <span style=color:#f92672>=</span> Coordinate(ret<span style=color:#f92672>.</span>x <span style=color:#66d9ef>if</span> ret<span style=color:#f92672>.</span>x <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>0</span> <span style=color:#66d9ef>else</span> <span style=color:#ae81ff>0</span>, ret<span style=color:#f92672>.</span>y <span style=color:#66d9ef>if</span> ret<span style=color:#f92672>.</span>y <span style=color:#f92672>&gt;</span> <span style=color:#ae81ff>0</span> <span style=color:#66d9ef>else</span> <span style=color:#ae81ff>0</span>)
+<span style=color:#f92672>...</span>         <span style=color:#66d9ef>return</span> ret
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>return</span> checker
+<span style=color:#f92672>&gt;&gt;&gt;</span> add <span style=color:#f92672>=</span> wrapper(add)
+<span style=color:#f92672>&gt;&gt;&gt;</span> sub <span style=color:#f92672>=</span> wrapper(sub)
+<span style=color:#f92672>&gt;&gt;&gt;</span> sub(one, two)
+Coord: {<span style=color:#e6db74>&#39;y&#39;</span>: <span style=color:#ae81ff>0</span>, <span style=color:#e6db74>&#39;x&#39;</span>: <span style=color:#ae81ff>0</span>}
+<span style=color:#f92672>&gt;&gt;&gt;</span> add(one, three)
+Coord: {<span style=color:#e6db74>&#39;y&#39;</span>: <span style=color:#ae81ff>200</span>, <span style=color:#e6db74>&#39;x&#39;</span>: <span style=color:#ae81ff>100</span>}
+</code></pre></div><ul><li><code>@</code>による糖衣構文</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#66d9ef>def</span> <span style=color:#a6e22e>add</span>(a, b):
+    <span style=color:#66d9ef>return</span> Coordinate(a<span style=color:#f92672>.</span>x <span style=color:#f92672>+</span> b<span style=color:#f92672>.</span>x, a<span style=color:#f92672>.</span>y <span style=color:#f92672>+</span> b<span style=color:#f92672>.</span>y)
+add <span style=color:#f92672>=</span> wrapper(add)
+</code></pre></div><p>＝</p><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#a6e22e>@wrapper</span>
+<span style=color:#66d9ef>def</span> <span style=color:#a6e22e>add</span>(a, b):
+    <span style=color:#66d9ef>return</span> Coordinate(a<span style=color:#f92672>.</span>x <span style=color:#f92672>+</span> b<span style=color:#f92672>.</span>x, a<span style=color:#f92672>.</span>y <span style=color:#f92672>+</span> b<span style=color:#f92672>.</span>y)
+</code></pre></div><ul><li>loggerの例</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-python data-lang=python><span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>logger</span>(func):
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>inner</span>(<span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kwargs): <span style=color:#75715e>#1</span>
+<span style=color:#f92672>...</span>         <span style=color:#66d9ef>print</span> <span style=color:#e6db74>&#34;Arguments were: </span><span style=color:#e6db74>%s</span><span style=color:#e6db74>, </span><span style=color:#e6db74>%s</span><span style=color:#e6db74>&#34;</span> <span style=color:#f92672>%</span> (args, kwargs)
+<span style=color:#f92672>...</span>         <span style=color:#66d9ef>return</span> func(<span style=color:#f92672>*</span>args, <span style=color:#f92672>**</span>kwargs) <span style=color:#75715e>#2</span>
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>return</span> inner
+<span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#a6e22e>@logger</span>
+<span style=color:#f92672>...</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>foo1</span>(x, y<span style=color:#f92672>=</span><span style=color:#ae81ff>1</span>):
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>return</span> x <span style=color:#f92672>*</span> y
+<span style=color:#f92672>&gt;&gt;&gt;</span> <span style=color:#a6e22e>@logger</span>
+<span style=color:#f92672>...</span> <span style=color:#66d9ef>def</span> <span style=color:#a6e22e>foo2</span>():
+<span style=color:#f92672>...</span>     <span style=color:#66d9ef>return</span> <span style=color:#ae81ff>2</span>
+<span style=color:#f92672>&gt;&gt;&gt;</span> foo1(<span style=color:#ae81ff>5</span>, <span style=color:#ae81ff>4</span>)
+Arguments were: (<span style=color:#ae81ff>5</span>, <span style=color:#ae81ff>4</span>), {}
+<span style=color:#ae81ff>20</span>
+<span style=color:#f92672>&gt;&gt;&gt;</span> foo1(<span style=color:#ae81ff>1</span>)
+Arguments were: (<span style=color:#ae81ff>1</span>,), {}
+<span style=color:#ae81ff>1</span>
+<span style=color:#f92672>&gt;&gt;&gt;</span> foo2()
+Arguments were: (), {}
+<span style=color:#ae81ff>2</span>
+</code></pre></div><p class="mt-5 text-center"><span class=text-secondary>Tagged:</span>
+<a href=http://jagijagijag1.github.io/tiny-note/tags/python/ class="link-tag text-dark">#Python</a></p></article><div class="row pt-5 pb-5"><div class="col-6 text-left"><a class=text-reset href=http://jagijagijag1.github.io/tiny-note/posts/2020_05_17_21_21_54/>&larr; プログラミング言語Go完全入門</a></div><div class="col-6 text-right"><a class=text-reset href=http://jagijagijag1.github.io/tiny-note/posts/2020_07_20_15_33_12/>Meaningful availability &rarr;</a></div></div></div></div></div></div></main><footer class="site-footer mt-5"><div class=container><div class="row justify-content-md-between"><div class="col-sm-12 col-md-4 mb-4"><h2 class="h5 mb-3">jagijagijag1 tiny tech notes</h2><p>Tiny fragments for my tech activities. More cohesive articles are on https://jagijagijag1.github.io/blog/</p></div><section id=pixela_access_counter class="col-sm-12 col-md-4 mb-4"><header><h5>Blog PVs</h5></header><div id=svg-load-area style="border:1px solid rgba(161,161,161,.3)"></div><div style=text-align:right>Powered by <a href=https://pixe.la/ target=_blank>Pixela</a></div></section><script src=https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js></script><script src=https://unpkg.com/tippy.js@3/dist/tippy.all.min.js></script><script>document.addEventListener('DOMContentLoaded',function(){$('#svg-load-area').load('https:\/\/pixe.la\/v1\/users\/jagijagijag1\/graphs\/pomodoro?mode=short',function(){tippy('.each-day',{arrow:true});});});</script><div class="col-4 col-md-2 mb-4"><h2 class="h5 mb-3">Menu</h2><ul class="nav flex-column"><li class=mb-1><a href=http://jagijagijag1.github.io/tiny-note/ class=text-secondary>Home</a></li><li class=mb-1><a href=https://jagijagijag1.github.io/blog/ class=text-secondary>Blog (external)</a></li></ul></div></div><hr><div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-center"><div class="text-muted mb-3"><a href=https://10mohi6.tk class=text-reset>design</a> <a href=https://github.com/10mohi6/hugo-theme-simple-blog class=text-reset>theme</a></p></div></div></div></footer></body></html>
