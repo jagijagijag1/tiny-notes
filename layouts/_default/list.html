@@ -1,0 +1,51 @@
+{{ partial "header.html" . }}
+{{ $paginator := .Paginate ( where site.RegularPages "Type" "in" site.Params.mainSections ) }}
+{{ if eq .Kind "taxonomy" }}
+  {{ $paginator = .Data }}
+{{ end }}
+    <main id="main">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 col-xl-7">
+                    <h1 class="my-5 mt-lg-5 mb-lg-3 pb-lg-4 text-center">{{ if not .IsHome }}{{ .Title }}{{ else }}{{ .Site.Title }}{{ end }}</h1>
+                </div>
+            </div>
+        </div>
+        <div class="bg-skew bg-skew-light">
+            <div class="container py-4">
+                <div class="row">
+                    {{ range $paginator.Pages }}
+                    <div class="col-lg-4" style="padding-left: 0px; padding-right: 0px;">
+                        <div class="card card-hover mb-3 mx-lg-2">
+                            <div class="card-body pt-3 px-3 pb-2 text-center">
+                                {{ range .Params.categories }}
+                                <a href="{{ $.Site.BaseURL }}categories/{{ . | urlize }}/" class="d-inline-block link-cta mb-2 text-uppercase" style="font-size: small;">{{ . }}</a>
+                                {{ end }}
+                                <h5 class="card-title mb-3" style="font-size: medium;">
+                                    <a class="stretched-link" href="{{ .Permalink }}">{{ .Title }}</a>
+                                </h5>
+                                <p class="small mb-1"><span class="text-uppercase">{{.Date.Format "January 2, 2006"}}</span></p>
+                                <p class="card-text mb-1" style="font-size: small">{{ .Summary | plainify | htmlUnescape }}</p>
+                                <p class="mb-1" style="font-size: small;">
+                                    {{ range .Params.tags }}
+                                    <a href="{{ $.Site.BaseURL }}tags/{{ . | urlize }}/" class="link-tag text-dark">#{{ . }}</a>
+                                    {{ end }}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    {{ end }}
+                </div>
+                <nav aria-label="Page navigation">
+                    <ul class="pagination justify-content-center">
+                        {{ range $paginator.Pagers }}
+                        <li class="page-item {{ if eq $paginator.PageNumber .PageNumber }}active{{ end }}">
+                          <a class="page-link" href="{{ .URL }}">{{.PageNumber}}</a>
+                        </li>
+                        {{ end }}
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </main>
+{{ partial "footer.html" . }}

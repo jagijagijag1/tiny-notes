@@ -1,0 +1,33 @@
+baseURL = "http://jagijagijag1.github.io/tiny-note/"
+languageCode = "ja-jp"
+title = "jagijagijag1 tiny tech notes"
+theme = "hugo-theme-simple-blog"
+publishDir = "docs"
+
+# copyright = "© 2020 copyright text."
+paginate = 15
+# languageCode = "en"
+# DefaultContentLanguage = "en"
+# enableInlineShortcodes = true
+# footnoteReturnLinkContents = "^"
+
+hasCJKLanguage  = true
+googleAnalytics = "UA-22200830-1"
+
+[menu]
+
+  [[menu.main]]
+    identifier = "blog"
+    name = "Blog (external)"
+    url = "https://jagijagijag1.github.io/blog/"
+    weight = 10
+
+[taxonomies]
+category = "categories"
+tag = "tags"
+
+[params]
+description = "Tiny fragments for my tech activities. More cohesive articles are on https://jagijagijag1.github.io/blog/"
+pixelaAccessCounter = true
+# pixelaACGraphURL    = "https://pixe.la/v1/users/jagijagijag1/graphs/qrunch-pv?mode=short"
+pixelaACGraphURL    = "https://pixe.la/v1/users/jagijagijag1/graphs/pomodoro?mode=short"

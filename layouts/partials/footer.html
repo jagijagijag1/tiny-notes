@@ -1,0 +1,52 @@
+<footer class="site-footer mt-5">
+  <div class="container">
+      <div class="row justify-content-md-between">
+          <div class="col-sm-12 col-md-4 mb-4">
+              <h2 class="h5 mb-3">{{ .Site.Title }}</h2>
+              <p>{{.Site.Params.Description}}</p>
+          </div>
+
+          {{ if .Site.Params.pixelaAccessCounter }}
+          <section id="pixela_access_counter" class="col-sm-12 col-md-4 mb-4">
+            <header>
+              <h5>Blog PVs</h5>
+            </header>
+            <div id="svg-load-area" style="border: 1px solid rgba(161, 161, 161, 0.3);"></div>
+            <div style="text-align:right;">Powered by <a href="https://pixe.la/" target="_blank">Pixela</a></div>
+          </section>
+          <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+          <script src="https://unpkg.com/tippy.js@3/dist/tippy.all.min.js"></script>
+          <script>
+          document.addEventListener('DOMContentLoaded', function(){
+            $('#svg-load-area').load('{{.Site.Params.pixelaACGraphURL}}', function(){
+              tippy('.each-day', {
+                arrow: true
+              });
+            });
+          });
+          </script>
+          {{ end }}
+
+          <div class="col-4 col-md-2 mb-4">
+              <h2 class="h5 mb-3">Menu</h2>
+              <ul class="nav flex-column">
+                  <li class="mb-1"><a href="{{ .Site.BaseURL }}" class="text-secondary">Home</a></li>
+                  {{ range .Site.Menus.main }}
+                  <li class="mb-1"><a href="{{ .URL }}" class="text-secondary">{{ .Name }}</a></li>
+                  {{ end }}
+              </ul>
+          </div>
+      </div>
+
+      <hr/>
+
+      <div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-center">
+          <div class="text-muted mb-3">
+              {{ .Site.Copyright }}
+              <a href="https://10mohi6.tk" class="text-reset">design</a> <a href="https://github.com/10mohi6/hugo-theme-simple-blog" class="text-reset">theme</a></p>
+          </div>
+      </div>
+  </div>
+</footer>
+</body>
+</html>
