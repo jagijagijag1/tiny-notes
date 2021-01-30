@@ -1,110 +1,110 @@
-<!doctype html><html lang=ja-jp><head><title>基礎から学ぶVue.js 個人メモ - jagijagijag1 tiny tech notes</title><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel=stylesheet><link rel=stylesheet href=https://jagijagijag1.github.io/tiny-notes/css/bootstrap.css><link rel=stylesheet href=https://jagijagijag1.github.io/tiny-notes/css/custom.css></head><body><main id=main><div class=container><div class="row justify-content-center text-center my-5"><div class=col-lg-10><a href=https://jagijagijag1.github.io/tiny-notes/categories/%E8%AA%AD%E6%9B%B8%E3%83%A1%E3%83%A2/ class="d-inline-block link-cta mb-4 text-uppercase">読書メモ</a><h1 class="mb-4 text-center">基礎から学ぶVue.js 個人メモ</h1><p class="small mb-5 text-center"><span class=text-uppercase>October 30, 2019</span></p></div></div></div><div class="bg-skew bg-skew-light"><div class=container><div class="row justify-content-center"><div class=col-lg-8><article class=pb-2><h3 id=p46-createdとmountedの使い分け>p.46 <code>created</code>と<code>mounted</code>の使い分け</h3><ul><li><code>created</code><ul><li>リアクティブデータが初期化された直後に呼ばれる ＝ DOMは構築されてない</li><li><code>this</code>にはアクセスできるが<code>$el</code>や<code>getElementById()</code>などでのDOMアクセスは負荷</li></ul></li><li><code>mounted</code><ul><li>DOMが作成された直後</li><li><code>$el</code>や<code>getElementById()</code>などを使用できる</li><li>すべての子コンポーネントがマウントされているかは保証しない</li></ul></li></ul><h3 id=p48-vuejsのライフサイクル>p.48 Vue.jsのライフサイクル</h3><p><img src=https://jp.vuejs.org/images/lifecycle.png alt=lifecycle.png></p><h3 id=p68-v-ifとv-showの使い分け>p.68 <code>v-if</code>と<code>v-show</code>の使い分け</h3><ul><li><code>v-if</code><ul><li>条件を満たさない場合，DOMレベルで削除 = 監視解除</li><li>コンポーネントならインスタンスは破棄，次の描画時は初期化されている</li><li>内側にディレクティブやコンポーネントを多用していたり，特定のデータを持っていないとエラーが起きる場合はこちらがよい</li></ul></li><li><code>v-show</code><ul><li>条件を満たさない場合，<code>display: none;</code>を付与 = 監視は継続</li><li>内側にディレクティブやコンポーネントが少なく，切り替えの頻度が高い場合はこちらの方がパフォーマンスよい</li></ul></li></ul><h3 id=p70-リストデータの扱い>p.70 リストデータの扱い</h3><ul><li>リストデータ：オブジェクトを要素にした配列にするとよい (単なる文字列の配列でなく)<ul><li>プロパティにユニークキーをもたせることで，更新するとき仮想DOMによる描画最適化が行われるため<ul><li>効率的な描画のため，ユニークな<code>key</code>属性を設定することが強く推奨されている</li><li>VSCodeでもデフォルトのLinterでエラー扱いになる</li></ul></li><li>e.g. <code>&lt;li v-for="item in list" v-bind:key="item.id"></code><ul><li>↑の<code>v-bind:key</code>のところを指定すると描画最適化される</li></ul></li></ul></li></ul><h3 id=p102-コンポーネントのイベントハンドリング>p.102 コンポーネントのイベントハンドリング</h3><ul><li><code>.native</code>修飾子をつけるとコンポーネントのイベントを受けてハンドラ実行できる</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-html data-lang=html><span style=color:#75715e>&lt;!-- コンポーネントをクリックするとハンドラが呼び出される --&gt;</span>
-&lt;<span style=color:#f92672>my-component</span> <span style=color:#a6e22e>v-on:click</span><span style=color:#960050;background-color:#1e0010>.</span><span style=color:#a6e22e>native</span><span style=color:#f92672>=</span><span style=color:#e6db74>&#34;handler&#34;</span> /&gt;
-<span style=color:#75715e>&lt;!-- コンポーネントをクリックしてもハンドラが呼び出されない --&gt;</span>
-&lt;<span style=color:#f92672>my-component</span> <span style=color:#a6e22e>v-on:click</span><span style=color:#f92672>=</span><span style=color:#e6db74>&#34;handler&#34;</span> /&gt;
-</code></pre></div><h3 id=p113-フォーム入力の修飾子>p.113 フォーム入力の修飾子</h3><ul><li><code>.lazy</code>をつけると<code>change</code>イベントで同期<ul><li>テキストフォームの場合，フォーカスが外れたりエンターを押したときに同期</li><li>デフォルト(<code>.lazy</code>なし)の場合は入力された時点で同期</li></ul></li></ul><h3 id=p123-算出プロパティのキャッシュ>p.123 算出プロパティのキャッシュ</h3><ul><li>キャッシュを再構築するトリガになるのはリアクティブなデータのみ</li><li>算出プロパティで使う<code>Math.random()</code>はリアクティブでないため，何度使用しても同じ数字が返される</li></ul><h3 id=p209-リストトランジッション-leaveとmoveの同時発生>p.209 リストトランジッション LeaveとMoveの同時発生</h3><ul><li>絞り込みなどで複数要素が同時に消えるとき，後ろのようsはLeaveとMoveの両方のクラスがつく</li><li>このときCSSで両方が適用され，どちらかの設定がどちらかで上書きされる</li><li>これを回避するためには<code>:not()</code>をつかう</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-css data-lang=css>.<span style=color:#a6e22e>v-enter-active</span> .<span style=color:#a6e22e>v-leave-active</span> {
-  <span style=color:#66d9ef>transition</span>: <span style=color:#66d9ef>opacity</span> <span style=color:#ae81ff>1</span><span style=color:#66d9ef>s</span>, <span style=color:#66d9ef>transform</span> <span style=color:#ae81ff>1</span><span style=color:#66d9ef>s</span>;
-}
-.<span style=color:#a6e22e>v-move</span>:<span style=color:#a6e22e>not</span><span style=color:#f92672>(</span>.<span style=color:#a6e22e>v-leave-active</span><span style=color:#f92672>)</span> {
-  <span style=color:#66d9ef>transition</span>: <span style=color:#66d9ef>transform</span> <span style=color:#ae81ff>1</span><span style=color:#66d9ef>s</span>;
-}
-</code></pre></div><h3 id=p248-スプレッド演算子>p.248 スプレッド演算子</h3><ul><li>配列やオブジェクトのリテラルを展開する</li><li>複数のオブジェクトを一つにまとめることもできる</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>array</span> <span style=color:#f92672>=</span> [<span style=color:#ae81ff>1</span>, <span style=color:#ae81ff>2</span>, <span style=color:#ae81ff>3</span>]
-
-<span style=color:#75715e>// バラバラの3つの引数として渡す
-</span><span style=color:#75715e></span><span style=color:#a6e22e>myFunction</span>(..<span style=color:#a6e22e>array</span>)
-
-<span style=color:#75715e>// arrayを展開して4を加えた新しい一次元配列を作成
-</span><span style=color:#75715e></span><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>newArray</span> <span style=color:#f92672>=</span> [..<span style=color:#a6e22e>array</span>, <span style=color:#ae81ff>4</span>] <span style=color:#75715e>// -&gt; (4)[1, 2, 3, 4]
-</span></code></pre></div><h3 id=p258-vuexのコアコンセプト>p.258 Vuexのコアコンセプト</h3><p><img src=https://vuex.vuejs.org/vuex.png alt=vuex.png></p><h3 id=p271-vuex-ミューテーション>p.271 Vuex ミューテーション</h3><ul><li>下記コードで<code>store.commit('update')</code>するとA, B両方のupdateが実行される<ul><li>これに対し，各moduleの定義で<code>namespaced: true</code>にすることで，<code>commit('moduleA/update')</code>のように個別アクセスできるようになる</li></ul></li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>moduleA</span> <span style=color:#f92672>=</span> {
-  <span style=color:#a6e22e>state</span><span style=color:#f92672>:</span> {
-    <span style=color:#a6e22e>count</span><span style=color:#f92672>:</span> <span style=color:#ae81ff>1</span>
-  },
-  <span style=color:#a6e22e>mutations</span><span style=color:#f92672>:</span> {
-    <span style=color:#a6e22e>update</span>(<span style=color:#a6e22e>state</span>) { <span style=color:#a6e22e>state</span>.<span style=color:#a6e22e>count</span> <span style=color:#f92672>+=</span> <span style=color:#ae81ff>100</span> }
-  }
-}
-
-<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>moduleB</span> <span style=color:#f92672>=</span> {
-  <span style=color:#a6e22e>state</span><span style=color:#f92672>:</span> {
-    <span style=color:#a6e22e>count</span><span style=color:#f92672>:</span> <span style=color:#ae81ff>2</span>
-  },
-  <span style=color:#a6e22e>mutations</span><span style=color:#f92672>:</span> {
-    <span style=color:#a6e22e>update</span>(<span style=color:#a6e22e>state</span>) { <span style=color:#a6e22e>state</span>.<span style=color:#a6e22e>count</span> <span style=color:#f92672>+=</span> <span style=color:#ae81ff>200</span> }
-  }
-}
-</code></pre></div><h3 id=p279-vuex-strictモード>p.279 Vuex Strictモード</h3><ul><li><p>Strictモードを使うと，タイプミスなどで不用意にステートを変更すると警告が出るようになる</p><ul><li>本番・運用では不要なので，環境変数で切り替えるようにするとよい</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>store</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>Vuex</span>.<span style=color:#a6e22e>Store</span>({
-  <span style=color:#a6e22e>strict</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>process</span>.<span style=color:#a6e22e>env</span>.<span style=color:#a6e22e>NODE_ENV</span> <span style=color:#f92672>!==</span> <span style=color:#e6db74>&#39;production&#39;</span>
-})
-</code></pre></div></li></ul><h3 id=p313>p.313</h3><ul><li>ページ遷移のエフェクトをつける一連のコード</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>// ルータービュー用のVuexモジュール
-</span><span style=color:#75715e></span><span style=color:#66d9ef>export</span> <span style=color:#66d9ef>default</span> {
-  <span style=color:#a6e22e>namespaced</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>true</span>,
-  <span style=color:#a6e22e>state</span><span style=color:#f92672>:</span> {
-    <span style=color:#a6e22e>loading</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>false</span>
-  },
-  <span style=color:#a6e22e>mutations</span><span style=color:#f92672>:</span> {
-    <span style=color:#a6e22e>start</span>(<span style=color:#a6e22e>state</span>) { <span style=color:#a6e22e>state</span>.<span style=color:#a6e22e>loading</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>true</span> },
-    <span style=color:#a6e22e>end</span>(<span style=color:#a6e22e>state</span>) { <span style=color:#a6e22e>state</span>.<span style=color:#a6e22e>loading</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>false</span>}
-  }
-}
-</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#75715e>// グローバルのナビゲーションガード
-</span><span style=color:#75715e></span><span style=color:#a6e22e>router</span>.<span style=color:#a6e22e>beforeEach</span>((<span style=color:#a6e22e>to</span>, <span style=color:#a6e22e>from</span>, <span style=color:#a6e22e>next</span>) =&gt; {
-  <span style=color:#a6e22e>store</span>.<span style=color:#a6e22e>commit</span>(<span style=color:#e6db74>&#39;view/start&#39;</span>)
-  <span style=color:#a6e22e>next</span>()
-})
-<span style=color:#a6e22e>router</span>.<span style=color:#a6e22e>afterEach</span>(() =&gt; {
-  <span style=color:#a6e22e>state</span>.<span style=color:#a6e22e>commit</span>(<span style=color:#e6db74>&#39;view/end&#39;</span>)
-})
-</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-html data-lang=html><span style=color:#75715e>&lt;!-- オーバーレイ用のコンポーネント --&gt;</span>
-&lt;<span style=color:#f92672>template</span>&gt;
-  &lt;<span style=color:#f92672>transition</span> <span style=color:#a6e22e>name</span><span style=color:#f92672>=</span><span style=color:#e6db74>&#34;loading&#34;</span>&gt;
-    &lt;<span style=color:#f92672>div</span> <span style=color:#a6e22e>class</span><span style=color:#f92672>=</span><span style=color:#e6db74>&#34;loading&#34;</span> <span style=color:#a6e22e>v-if</span><span style=color:#f92672>=</span><span style=color:#e6db74>&#34;loading&#34;</span>&gt;Loading&lt;/<span style=color:#f92672>div</span>&gt;
-  &lt;/<span style=color:#f92672>transition</span>&gt;
-&lt;/<span style=color:#f92672>template</span>&gt;
-
-&lt;<span style=color:#f92672>script</span>&gt;
-<span style=color:#66d9ef>export</span> <span style=color:#66d9ef>default</span> {
-  <span style=color:#a6e22e>computed</span>() {
-    <span style=color:#a6e22e>loading</span>() { <span style=color:#66d9ef>return</span> <span style=color:#66d9ef>this</span>.<span style=color:#a6e22e>$store</span>.<span style=color:#a6e22e>state</span>.<span style=color:#a6e22e>view</span>.<span style=color:#a6e22e>loading</span> <span style=color:#a6e22e>$</span>}
-  }
-}
-&lt;/<span style=color:#f92672>script</span>&gt;
-</code></pre></div><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-css data-lang=css>.<span style=color:#a6e22e>loading-enter-active</span> {
-  <span style=color:#66d9ef>transition</span>: <span style=color:#66d9ef>all</span> <span style=color:#ae81ff>0.25</span><span style=color:#66d9ef>s</span>;
-}
-.<span style=color:#a6e22e>loading-leave-active</span> {
-  <span style=color:#66d9ef>transition</span>: <span style=color:#66d9ef>all</span> <span style=color:#ae81ff>0.5</span><span style=color:#66d9ef>s</span> <span style=color:#66d9ef>ease</span> <span style=color:#ae81ff>0.5</span><span style=color:#66d9ef>s</span>;
-}
-</code></pre></div><h3 id=p316-コンポーネントの非同期読み込み>p.316 コンポーネントの非同期読み込み</h3><ul><li>webpackのコード分割機能をつかって，必要になった時点でJavaScriptファイルを読み込むことができる</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#66d9ef>const</span> <span style=color:#a6e22e>About</span> <span style=color:#f92672>=</span> () =&gt; <span style=color:#66d9ef>import</span>(<span style=color:#e6db74>&#39;@/views/About&#39;</span>)
-<span style=color:#66d9ef>const</span> <span style=color:#a6e22e>router</span> <span style=color:#f92672>=</span> <span style=color:#66d9ef>new</span> <span style=color:#a6e22e>VueRouter</span>({
-  <span style=color:#a6e22e>routes</span><span style=color:#f92672>:</span> [
-    {
-      <span style=color:#a6e22e>path</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#39;/about&#39;</span>,
-      <span style=color:#a6e22e>component</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>About</span>
-      <span style=color:#75715e>// component: () =&gt; import(&#39;@/vue/About&#39;) でもOK
-</span><span style=color:#75715e></span>    }
-  ]
-})
-</code></pre></div><h3 id=p317-vue-router-ルートアクセス制限>p.317 Vue Router ルートアクセス制限</h3><ul><li>認証を確認したいルートの定義: まずメタ情報をもたせる</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js>{
-  <span style=color:#a6e22e>path</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#39;/user&#39;</span>,
-  <span style=color:#a6e22e>component</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>User</span>,
-  <span style=color:#a6e22e>meta</span><span style=color:#f92672>:</span> { <span style=color:#a6e22e>requiresAuth</span><span style=color:#f92672>:</span> <span style=color:#66d9ef>true</span> }
-}
-</code></pre></div><ul><li>その後，グローバルなルート制御で認証チェックする処理を入れる</li></ul><div class=highlight><pre style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-js data-lang=js><span style=color:#a6e22e>router</span>.<span style=color:#a6e22e>beforeEach</span>((<span style=color:#a6e22e>to</span>, <span style=color:#a6e22e>from</span>, <span style=color:#a6e22e>next</span>) =&gt; {
-  <span style=color:#75715e>// 上位ルートを含めて人所グア必要なルートがあるかを確認
-</span><span style=color:#75715e></span>  <span style=color:#66d9ef>if</span> (<span style=color:#a6e22e>to</span>.<span style=color:#a6e22e>matched</span>.<span style=color:#a6e22e>some</span>(<span style=color:#a6e22e>record</span> =&gt; <span style=color:#a6e22e>record</span>.<span style=color:#a6e22e>meta</span>.<span style=color:#a6e22e>requireAuth</span>)) {
-    <span style=color:#75715e>// 認証状態を確認
-</span><span style=color:#75715e></span>    <span style=color:#66d9ef>if</span> (<span style=color:#f92672>!</span><span style=color:#a6e22e>auth</span>.<span style=color:#a6e22e>loggedIn</span>()) {
-      <span style=color:#75715e>// 認証していなければログインページにリダイレクト
-</span><span style=color:#75715e></span>      <span style=color:#a6e22e>next</span>({
-        <span style=color:#a6e22e>path</span><span style=color:#f92672>:</span> <span style=color:#e6db74>&#39;/login&#39;</span>,
-        <span style=color:#a6e22e>query</span><span style=color:#f92672>:</span> { <span style=color:#a6e22e>redirect</span><span style=color:#f92672>:</span> <span style=color:#a6e22e>to</span>.<span style=color:#a6e22e>fullPath</span> }
-      })
-    } <span style=color:#66d9ef>else</span> {
-      <span style=color:#a6e22e>next</span>()
-    }
-  } <span style=color:#66d9ef>else</span> {
-    <span style=color:#a6e22e>next</span>() <span style=color:#75715e>// 認証確認不要なルートなら普通に遷移
-</span><span style=color:#75715e></span>  }
-})
+<!doctype html><html lang=ja-jp><head><title>基礎から学ぶVue.js 個人メモ - jagijagijag1 tiny tech notes</title><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel=stylesheet><link rel=stylesheet href=https://jagijagijag1.github.io/tiny-notes/css/bootstrap.css><link rel=stylesheet href=https://jagijagijag1.github.io/tiny-notes/css/custom.css><link rel=stylesheet href=https://jagijagijag1.github.io/tiny-notes/css/add-on.css><link rel=stylesheet href=https://jagijagijag1.github.io/tiny-notes/css/syntax.css></head><body><main id=main><div class=container><div class="row justify-content-center text-center my-5"><div class=col-lg-10><a href=https://jagijagijag1.github.io/tiny-notes/categories/%E8%AA%AD%E6%9B%B8%E3%83%A1%E3%83%A2/ class="d-inline-block link-cta mb-4 text-uppercase">読書メモ</a><h1 class="mb-4 text-center">基礎から学ぶVue.js 個人メモ</h1><p class="small mb-5 text-center"><span class=text-uppercase>October 30, 2019</span></p></div></div></div><div class="bg-skew bg-skew-light"><div class=container><div class="row justify-content-center"><div class=col-lg-8><article class=pb-2><h3 id=p46-createdとmountedの使い分け>p.46 <code>created</code>と<code>mounted</code>の使い分け</h3><ul><li><code>created</code><ul><li>リアクティブデータが初期化された直後に呼ばれる ＝ DOMは構築されてない</li><li><code>this</code>にはアクセスできるが<code>$el</code>や<code>getElementById()</code>などでのDOMアクセスは負荷</li></ul></li><li><code>mounted</code><ul><li>DOMが作成された直後</li><li><code>$el</code>や<code>getElementById()</code>などを使用できる</li><li>すべての子コンポーネントがマウントされているかは保証しない</li></ul></li></ul><h3 id=p48-vuejsのライフサイクル>p.48 Vue.jsのライフサイクル</h3><p><img src=https://jp.vuejs.org/images/lifecycle.png alt=lifecycle.png></p><h3 id=p68-v-ifとv-showの使い分け>p.68 <code>v-if</code>と<code>v-show</code>の使い分け</h3><ul><li><code>v-if</code><ul><li>条件を満たさない場合，DOMレベルで削除 = 監視解除</li><li>コンポーネントならインスタンスは破棄，次の描画時は初期化されている</li><li>内側にディレクティブやコンポーネントを多用していたり，特定のデータを持っていないとエラーが起きる場合はこちらがよい</li></ul></li><li><code>v-show</code><ul><li>条件を満たさない場合，<code>display: none;</code>を付与 = 監視は継続</li><li>内側にディレクティブやコンポーネントが少なく，切り替えの頻度が高い場合はこちらの方がパフォーマンスよい</li></ul></li></ul><h3 id=p70-リストデータの扱い>p.70 リストデータの扱い</h3><ul><li>リストデータ：オブジェクトを要素にした配列にするとよい (単なる文字列の配列でなく)<ul><li>プロパティにユニークキーをもたせることで，更新するとき仮想DOMによる描画最適化が行われるため<ul><li>効率的な描画のため，ユニークな<code>key</code>属性を設定することが強く推奨されている</li><li>VSCodeでもデフォルトのLinterでエラー扱いになる</li></ul></li><li>e.g. <code>&lt;li v-for="item in list" v-bind:key="item.id"></code><ul><li>↑の<code>v-bind:key</code>のところを指定すると描画最適化される</li></ul></li></ul></li></ul><h3 id=p102-コンポーネントのイベントハンドリング>p.102 コンポーネントのイベントハンドリング</h3><ul><li><code>.native</code>修飾子をつけるとコンポーネントのイベントを受けてハンドラ実行できる</li></ul><div class=highlight><pre class=chroma><code class=language-html data-lang=html><span class=ln>1</span><span class=c>&lt;!-- コンポーネントをクリックするとハンドラが呼び出される --&gt;</span>
+<span class=ln>2</span><span class=p>&lt;</span><span class=nt>my-component</span> <span class=na>v-on:click</span><span class=err>.</span><span class=na>native</span><span class=o>=</span><span class=s>&#34;handler&#34;</span> <span class=p>/&gt;</span>
+<span class=ln>3</span><span class=c>&lt;!-- コンポーネントをクリックしてもハンドラが呼び出されない --&gt;</span>
+<span class=ln>4</span><span class=p>&lt;</span><span class=nt>my-component</span> <span class=na>v-on:click</span><span class=o>=</span><span class=s>&#34;handler&#34;</span> <span class=p>/&gt;</span>
+</code></pre></div><h3 id=p113-フォーム入力の修飾子>p.113 フォーム入力の修飾子</h3><ul><li><code>.lazy</code>をつけると<code>change</code>イベントで同期<ul><li>テキストフォームの場合，フォーカスが外れたりエンターを押したときに同期</li><li>デフォルト(<code>.lazy</code>なし)の場合は入力された時点で同期</li></ul></li></ul><h3 id=p123-算出プロパティのキャッシュ>p.123 算出プロパティのキャッシュ</h3><ul><li>キャッシュを再構築するトリガになるのはリアクティブなデータのみ</li><li>算出プロパティで使う<code>Math.random()</code>はリアクティブでないため，何度使用しても同じ数字が返される</li></ul><h3 id=p209-リストトランジッション-leaveとmoveの同時発生>p.209 リストトランジッション LeaveとMoveの同時発生</h3><ul><li>絞り込みなどで複数要素が同時に消えるとき，後ろのようsはLeaveとMoveの両方のクラスがつく</li><li>このときCSSで両方が適用され，どちらかの設定がどちらかで上書きされる</li><li>これを回避するためには<code>:not()</code>をつかう</li></ul><div class=highlight><pre class=chroma><code class=language-css data-lang=css><span class=ln>1</span><span class=p>.</span><span class=nc>v-enter-active</span> <span class=p>.</span><span class=nc>v-leave-active</span> <span class=p>{</span>
+<span class=ln>2</span>  <span class=k>transition</span><span class=p>:</span> <span class=k>opacity</span> <span class=mi>1</span><span class=kt>s</span><span class=p>,</span> <span class=k>transform</span> <span class=mi>1</span><span class=kt>s</span><span class=p>;</span>
+<span class=ln>3</span><span class=p>}</span>
+<span class=ln>4</span><span class=p>.</span><span class=nc>v-move</span><span class=p>:</span><span class=nd>not</span><span class=o>(</span><span class=p>.</span><span class=nc>v-leave-active</span><span class=o>)</span> <span class=p>{</span>
+<span class=ln>5</span>  <span class=k>transition</span><span class=p>:</span> <span class=k>transform</span> <span class=mi>1</span><span class=kt>s</span><span class=p>;</span>
+<span class=ln>6</span><span class=p>}</span>
+</code></pre></div><h3 id=p248-スプレッド演算子>p.248 スプレッド演算子</h3><ul><li>配列やオブジェクトのリテラルを展開する</li><li>複数のオブジェクトを一つにまとめることもできる</li></ul><div class=highlight><pre class=chroma><code class=language-js data-lang=js><span class=ln>1</span><span class=kr>const</span> <span class=nx>array</span> <span class=o>=</span> <span class=p>[</span><span class=mi>1</span><span class=p>,</span> <span class=mi>2</span><span class=p>,</span> <span class=mi>3</span><span class=p>]</span>
+<span class=ln>2</span>
+<span class=ln>3</span><span class=c1>// バラバラの3つの引数として渡す
+</span><span class=ln>4</span><span class=c1></span><span class=nx>myFunction</span><span class=p>(..</span><span class=nx>array</span><span class=p>)</span>
+<span class=ln>5</span>
+<span class=ln>6</span><span class=c1>// arrayを展開して4を加えた新しい一次元配列を作成
+</span><span class=ln>7</span><span class=c1></span><span class=kr>const</span> <span class=nx>newArray</span> <span class=o>=</span> <span class=p>[..</span><span class=nx>array</span><span class=p>,</span> <span class=mi>4</span><span class=p>]</span> <span class=c1>// -&gt; (4)[1, 2, 3, 4]
+</span></code></pre></div><h3 id=p258-vuexのコアコンセプト>p.258 Vuexのコアコンセプト</h3><p><img src=https://vuex.vuejs.org/vuex.png alt=vuex.png></p><h3 id=p271-vuex-ミューテーション>p.271 Vuex ミューテーション</h3><ul><li>下記コードで<code>store.commit('update')</code>するとA, B両方のupdateが実行される<ul><li>これに対し，各moduleの定義で<code>namespaced: true</code>にすることで，<code>commit('moduleA/update')</code>のように個別アクセスできるようになる</li></ul></li></ul><div class=highlight><pre class=chroma><code class=language-js data-lang=js><span class=ln> 1</span><span class=kr>const</span> <span class=nx>moduleA</span> <span class=o>=</span> <span class=p>{</span>
+<span class=ln> 2</span>  <span class=nx>state</span><span class=o>:</span> <span class=p>{</span>
+<span class=ln> 3</span>    <span class=nx>count</span><span class=o>:</span> <span class=mi>1</span>
+<span class=ln> 4</span>  <span class=p>},</span>
+<span class=ln> 5</span>  <span class=nx>mutations</span><span class=o>:</span> <span class=p>{</span>
+<span class=ln> 6</span>    <span class=nx>update</span><span class=p>(</span><span class=nx>state</span><span class=p>)</span> <span class=p>{</span> <span class=nx>state</span><span class=p>.</span><span class=nx>count</span> <span class=o>+=</span> <span class=mi>100</span> <span class=p>}</span>
+<span class=ln> 7</span>  <span class=p>}</span>
+<span class=ln> 8</span><span class=p>}</span>
+<span class=ln> 9</span>
+<span class=ln>10</span><span class=kr>const</span> <span class=nx>moduleB</span> <span class=o>=</span> <span class=p>{</span>
+<span class=ln>11</span>  <span class=nx>state</span><span class=o>:</span> <span class=p>{</span>
+<span class=ln>12</span>    <span class=nx>count</span><span class=o>:</span> <span class=mi>2</span>
+<span class=ln>13</span>  <span class=p>},</span>
+<span class=ln>14</span>  <span class=nx>mutations</span><span class=o>:</span> <span class=p>{</span>
+<span class=ln>15</span>    <span class=nx>update</span><span class=p>(</span><span class=nx>state</span><span class=p>)</span> <span class=p>{</span> <span class=nx>state</span><span class=p>.</span><span class=nx>count</span> <span class=o>+=</span> <span class=mi>200</span> <span class=p>}</span>
+<span class=ln>16</span>  <span class=p>}</span>
+<span class=ln>17</span><span class=p>}</span>
+</code></pre></div><h3 id=p279-vuex-strictモード>p.279 Vuex Strictモード</h3><ul><li><p>Strictモードを使うと，タイプミスなどで不用意にステートを変更すると警告が出るようになる</p><ul><li>本番・運用では不要なので，環境変数で切り替えるようにするとよい</li></ul><div class=highlight><pre class=chroma><code class=language-js data-lang=js><span class=ln>1</span><span class=kr>const</span> <span class=nx>store</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>Vuex</span><span class=p>.</span><span class=nx>Store</span><span class=p>({</span>
+<span class=ln>2</span>  <span class=nx>strict</span><span class=o>:</span> <span class=nx>process</span><span class=p>.</span><span class=nx>env</span><span class=p>.</span><span class=nx>NODE_ENV</span> <span class=o>!==</span> <span class=s1>&#39;production&#39;</span>
+<span class=ln>3</span><span class=p>})</span>
+</code></pre></div></li></ul><h3 id=p313>p.313</h3><ul><li>ページ遷移のエフェクトをつける一連のコード</li></ul><div class=highlight><pre class=chroma><code class=language-js data-lang=js><span class=ln> 1</span><span class=c1>// ルータービュー用のVuexモジュール
+</span><span class=ln> 2</span><span class=c1></span><span class=kr>export</span> <span class=k>default</span> <span class=p>{</span>
+<span class=ln> 3</span>  <span class=nx>namespaced</span><span class=o>:</span> <span class=kc>true</span><span class=p>,</span>
+<span class=ln> 4</span>  <span class=nx>state</span><span class=o>:</span> <span class=p>{</span>
+<span class=ln> 5</span>    <span class=nx>loading</span><span class=o>:</span> <span class=kc>false</span>
+<span class=ln> 6</span>  <span class=p>},</span>
+<span class=ln> 7</span>  <span class=nx>mutations</span><span class=o>:</span> <span class=p>{</span>
+<span class=ln> 8</span>    <span class=nx>start</span><span class=p>(</span><span class=nx>state</span><span class=p>)</span> <span class=p>{</span> <span class=nx>state</span><span class=p>.</span><span class=nx>loading</span> <span class=o>=</span> <span class=kc>true</span> <span class=p>},</span>
+<span class=ln> 9</span>    <span class=nx>end</span><span class=p>(</span><span class=nx>state</span><span class=p>)</span> <span class=p>{</span> <span class=nx>state</span><span class=p>.</span><span class=nx>loading</span> <span class=o>=</span> <span class=kc>false</span><span class=p>}</span>
+<span class=ln>10</span>  <span class=p>}</span>
+<span class=ln>11</span><span class=p>}</span>
+</code></pre></div><div class=highlight><pre class=chroma><code class=language-js data-lang=js><span class=ln>1</span><span class=c1>// グローバルのナビゲーションガード
+</span><span class=ln>2</span><span class=c1></span><span class=nx>router</span><span class=p>.</span><span class=nx>beforeEach</span><span class=p>((</span><span class=nx>to</span><span class=p>,</span> <span class=nx>from</span><span class=p>,</span> <span class=nx>next</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>{</span>
+<span class=ln>3</span>  <span class=nx>store</span><span class=p>.</span><span class=nx>commit</span><span class=p>(</span><span class=s1>&#39;view/start&#39;</span><span class=p>)</span>
+<span class=ln>4</span>  <span class=nx>next</span><span class=p>()</span>
+<span class=ln>5</span><span class=p>})</span>
+<span class=ln>6</span><span class=nx>router</span><span class=p>.</span><span class=nx>afterEach</span><span class=p>(()</span> <span class=p>=&gt;</span> <span class=p>{</span>
+<span class=ln>7</span>  <span class=nx>state</span><span class=p>.</span><span class=nx>commit</span><span class=p>(</span><span class=s1>&#39;view/end&#39;</span><span class=p>)</span>
+<span class=ln>8</span><span class=p>})</span>
+</code></pre></div><div class=highlight><pre class=chroma><code class=language-html data-lang=html><span class=ln> 1</span><span class=c>&lt;!-- オーバーレイ用のコンポーネント --&gt;</span>
+<span class=ln> 2</span><span class=p>&lt;</span><span class=nt>template</span><span class=p>&gt;</span>
+<span class=ln> 3</span>  <span class=p>&lt;</span><span class=nt>transition</span> <span class=na>name</span><span class=o>=</span><span class=s>&#34;loading&#34;</span><span class=p>&gt;</span>
+<span class=ln> 4</span>    <span class=p>&lt;</span><span class=nt>div</span> <span class=na>class</span><span class=o>=</span><span class=s>&#34;loading&#34;</span> <span class=na>v-if</span><span class=o>=</span><span class=s>&#34;loading&#34;</span><span class=p>&gt;</span>Loading<span class=p>&lt;/</span><span class=nt>div</span><span class=p>&gt;</span>
+<span class=ln> 5</span>  <span class=p>&lt;/</span><span class=nt>transition</span><span class=p>&gt;</span>
+<span class=ln> 6</span><span class=p>&lt;/</span><span class=nt>template</span><span class=p>&gt;</span>
+<span class=ln> 7</span>
+<span class=ln> 8</span><span class=p>&lt;</span><span class=nt>script</span><span class=p>&gt;</span>
+<span class=ln> 9</span><span class=kr>export</span> <span class=k>default</span> <span class=p>{</span>
+<span class=ln>10</span>  <span class=nx>computed</span><span class=p>()</span> <span class=p>{</span>
+<span class=ln>11</span>    <span class=nx>loading</span><span class=p>()</span> <span class=p>{</span> <span class=k>return</span> <span class=k>this</span><span class=p>.</span><span class=nx>$store</span><span class=p>.</span><span class=nx>state</span><span class=p>.</span><span class=nx>view</span><span class=p>.</span><span class=nx>loading</span> <span class=nx>$</span><span class=p>}</span>
+<span class=ln>12</span>  <span class=p>}</span>
+<span class=ln>13</span><span class=p>}</span>
+<span class=ln>14</span><span class=p>&lt;/</span><span class=nt>script</span><span class=p>&gt;</span>
+</code></pre></div><div class=highlight><pre class=chroma><code class=language-css data-lang=css><span class=ln>1</span><span class=p>.</span><span class=nc>loading-enter-active</span> <span class=p>{</span>
+<span class=ln>2</span>  <span class=k>transition</span><span class=p>:</span> <span class=kc>all</span> <span class=mf>0.25</span><span class=kt>s</span><span class=p>;</span>
+<span class=ln>3</span><span class=p>}</span>
+<span class=ln>4</span><span class=p>.</span><span class=nc>loading-leave-active</span> <span class=p>{</span>
+<span class=ln>5</span>  <span class=k>transition</span><span class=p>:</span> <span class=kc>all</span> <span class=mf>0.5</span><span class=kt>s</span> <span class=kc>ease</span> <span class=mf>0.5</span><span class=kt>s</span><span class=p>;</span>
+<span class=ln>6</span><span class=p>}</span>
+</code></pre></div><h3 id=p316-コンポーネントの非同期読み込み>p.316 コンポーネントの非同期読み込み</h3><ul><li>webpackのコード分割機能をつかって，必要になった時点でJavaScriptファイルを読み込むことができる</li></ul><div class=highlight><pre class=chroma><code class=language-js data-lang=js><span class=ln> 1</span><span class=kr>const</span> <span class=nx>About</span> <span class=o>=</span> <span class=p>()</span> <span class=p>=&gt;</span> <span class=kr>import</span><span class=p>(</span><span class=s1>&#39;@/views/About&#39;</span><span class=p>)</span>
+<span class=ln> 2</span><span class=kr>const</span> <span class=nx>router</span> <span class=o>=</span> <span class=k>new</span> <span class=nx>VueRouter</span><span class=p>({</span>
+<span class=ln> 3</span>  <span class=nx>routes</span><span class=o>:</span> <span class=p>[</span>
+<span class=ln> 4</span>    <span class=p>{</span>
+<span class=ln> 5</span>      <span class=nx>path</span><span class=o>:</span> <span class=s1>&#39;/about&#39;</span><span class=p>,</span>
+<span class=ln> 6</span>      <span class=nx>component</span><span class=o>:</span> <span class=nx>About</span>
+<span class=ln> 7</span>      <span class=c1>// component: () =&gt; import(&#39;@/vue/About&#39;) でもOK
+</span><span class=ln> 8</span><span class=c1></span>    <span class=p>}</span>
+<span class=ln> 9</span>  <span class=p>]</span>
+<span class=ln>10</span><span class=p>})</span>
+</code></pre></div><h3 id=p317-vue-router-ルートアクセス制限>p.317 Vue Router ルートアクセス制限</h3><ul><li>認証を確認したいルートの定義: まずメタ情報をもたせる</li></ul><div class=highlight><pre class=chroma><code class=language-js data-lang=js><span class=ln>1</span><span class=p>{</span>
+<span class=ln>2</span>  <span class=nx>path</span><span class=o>:</span> <span class=s1>&#39;/user&#39;</span><span class=p>,</span>
+<span class=ln>3</span>  <span class=nx>component</span><span class=o>:</span> <span class=nx>User</span><span class=p>,</span>
+<span class=ln>4</span>  <span class=nx>meta</span><span class=o>:</span> <span class=p>{</span> <span class=nx>requiresAuth</span><span class=o>:</span> <span class=kc>true</span> <span class=p>}</span>
+<span class=ln>5</span><span class=p>}</span>
+</code></pre></div><ul><li>その後，グローバルなルート制御で認証チェックする処理を入れる</li></ul><div class=highlight><pre class=chroma><code class=language-js data-lang=js><span class=ln> 1</span><span class=nx>router</span><span class=p>.</span><span class=nx>beforeEach</span><span class=p>((</span><span class=nx>to</span><span class=p>,</span> <span class=nx>from</span><span class=p>,</span> <span class=nx>next</span><span class=p>)</span> <span class=p>=&gt;</span> <span class=p>{</span>
+<span class=ln> 2</span>  <span class=c1>// 上位ルートを含めて人所グア必要なルートがあるかを確認
+</span><span class=ln> 3</span><span class=c1></span>  <span class=k>if</span> <span class=p>(</span><span class=nx>to</span><span class=p>.</span><span class=nx>matched</span><span class=p>.</span><span class=nx>some</span><span class=p>(</span><span class=nx>record</span> <span class=p>=&gt;</span> <span class=nx>record</span><span class=p>.</span><span class=nx>meta</span><span class=p>.</span><span class=nx>requireAuth</span><span class=p>))</span> <span class=p>{</span>
+<span class=ln> 4</span>    <span class=c1>// 認証状態を確認
+</span><span class=ln> 5</span><span class=c1></span>    <span class=k>if</span> <span class=p>(</span><span class=o>!</span><span class=nx>auth</span><span class=p>.</span><span class=nx>loggedIn</span><span class=p>())</span> <span class=p>{</span>
+<span class=ln> 6</span>      <span class=c1>// 認証していなければログインページにリダイレクト
+</span><span class=ln> 7</span><span class=c1></span>      <span class=nx>next</span><span class=p>({</span>
+<span class=ln> 8</span>        <span class=nx>path</span><span class=o>:</span> <span class=s1>&#39;/login&#39;</span><span class=p>,</span>
+<span class=ln> 9</span>        <span class=nx>query</span><span class=o>:</span> <span class=p>{</span> <span class=nx>redirect</span><span class=o>:</span> <span class=nx>to</span><span class=p>.</span><span class=nx>fullPath</span> <span class=p>}</span>
+<span class=ln>10</span>      <span class=p>})</span>
+<span class=ln>11</span>    <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+<span class=ln>12</span>      <span class=nx>next</span><span class=p>()</span>
+<span class=ln>13</span>    <span class=p>}</span>
+<span class=ln>14</span>  <span class=p>}</span> <span class=k>else</span> <span class=p>{</span>
+<span class=ln>15</span>    <span class=nx>next</span><span class=p>()</span> <span class=c1>// 認証確認不要なルートなら普通に遷移
+</span><span class=ln>16</span><span class=c1></span>  <span class=p>}</span>
+<span class=ln>17</span><span class=p>})</span>
 </code></pre></div><p class="mt-5 text-center"><span class=text-secondary>Tagged:</span>
-<a href=https://jagijagijag1.github.io/tiny-notes/tags/vue.js/ class="link-tag text-dark">#Vue.js</a></p></article><div class="row pt-5 pb-5"><div class="col-6 text-left"><a class=text-reset href=https://jagijagijag1.github.io/tiny-notes/posts/2019_10_19_23_03_49/>&larr; Github Actionを途中まで試して諦めたメモ</a></div><div class="col-6 text-right"><a class=text-reset href=https://jagijagijag1.github.io/tiny-notes/posts/2019_11_10_22_23_00/>Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead &rarr;</a></div></div></div></div></div></div></main><footer class="site-footer mt-5"><div class=container><div class="row justify-content-md-between"><div class="col-sm-12 col-md-4 mb-4"><h2 class="h5 mb-3">jagijagijag1 tiny tech notes</h2><p>Tiny fragments for my tech activities. More cohesive articles are on https://jagijagijag1.github.io/blog/</p></div><section id=pixela_access_counter class="col-sm-12 col-md-4 mb-4"><header><h5>Blog PVs</h5></header><div id=svg-load-area style="border:1px solid rgba(161,161,161,.3)"></div><div style=text-align:right>Powered by <a href=https://pixe.la/ target=_blank>Pixela</a></div></section><script src=https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js></script><script src=https://unpkg.com/tippy.js@3/dist/tippy.all.min.js></script><script>document.addEventListener('DOMContentLoaded',function(){$('#svg-load-area').load('https:\/\/pixe.la\/v1\/users\/jagijagijag1\/graphs\/qrunch-pv?mode=short',function(){tippy('.each-day',{arrow:true});});});</script><div class="col-4 col-md-2 mb-4"><h2 class="h5 mb-3">Menu</h2><ul class="nav flex-column"><li class=mb-1><a href=https://jagijagijag1.github.io/tiny-notes/ class=text-secondary>Home</a></li><li class=mb-1><a href=https://jagijagijag1.github.io/blog/ class=text-secondary>Blog (external)</a></li></ul></div></div><hr><div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-center"><div class="text-muted mb-3"><a href=https://10mohi6.tk class=text-reset>design</a> <a href=https://github.com/10mohi6/hugo-theme-simple-blog class=text-reset>theme</a></p></div></div></div></footer></body></html>
+<a href=https://jagijagijag1.github.io/tiny-notes/tags/vue.js/ class="link-tag text-dark">#Vue.js</a></p></article><div class="row pt-5 pb-5"><div class="col-6 text-left"><a class=text-reset href=https://jagijagijag1.github.io/tiny-notes/posts/2019_10_19_23_03_49/>&larr; Github Actionを途中まで試して諦めたメモ</a></div><div class="col-6 text-right"><a class=text-reset href=https://jagijagijag1.github.io/tiny-notes/posts/2019_11_10_22_23_00/>Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead &rarr;</a></div></div></div></div></div></div></main><footer class="site-footer mt-5"><div class=container><div class="row justify-content-md-between"><div class="col-sm-12 col-md-4 mb-4"><h2 class="h5 mb-3">jagijagijag1 tiny tech notes</h2><p>Tiny fragments for my tech activities. More cohesive articles are on https://jagijagijag1.github.io/blog/</p></div><section id=pixela_access_counter class="col-sm-12 col-md-4 mb-4"><header><h5>Blog PVs</h5></header><div id=svg-load-area style="border:1px solid rgba(161,161,161,.3)"></div><div style=text-align:right>Powered by <a href=https://pixe.la/ target=_blank>Pixela</a></div></section><script src=https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js></script><script src=https://unpkg.com/tippy.js@3/dist/tippy.all.min.js></script><script>document.addEventListener('DOMContentLoaded',function(){$('#svg-load-area').load('https:\/\/pixe.la\/v1\/users\/jagijagijag1\/graphs\/qrunch-pv?mode=short',function(){tippy('.each-day',{arrow:true});});});</script><div class="col-4 col-md-2 mb-4"><h2 class="h5 mb-3">Menu</h2><ul class="nav flex-column"><li class=mb-1><a href=https://jagijagijag1.github.io/tiny-notes/ class=text-secondary>Home</a></li><li class=mb-1><a href=https://jagijagijag1.github.io/blog/ class=text-secondary>Blog (external)</a></li></ul></div></div><hr><div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-center"><div class="text-muted mb-3"><a href=https://10mohi6.tk class=text-reset>design</a> <a href=https://github.com/10mohi6/hugo-theme-simple-blog class=text-reset>theme</a></p></div></div></div></footer><script src=https://jagijagijag1.github.io/tiny-notes/js/add-on.js></script></body></html>

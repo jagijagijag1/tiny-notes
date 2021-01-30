@@ -1,0 +1,95 @@
+<!doctype html><html lang=ja-jp><head><title>Python/TyperでCLIツール開発メモ - jagijagijag1 tiny tech notes</title><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel=stylesheet><link rel=stylesheet href=https://jagijagijag1.github.io/tiny-notes/css/bootstrap.css><link rel=stylesheet href=https://jagijagijag1.github.io/tiny-notes/css/custom.css><link rel=stylesheet href=https://jagijagijag1.github.io/tiny-notes/css/add-on.css><link rel=stylesheet href=https://jagijagijag1.github.io/tiny-notes/css/syntax.css></head><body><main id=main><div class=container><div class="row justify-content-center text-center my-5"><div class=col-lg-10><a href=https://jagijagijag1.github.io/tiny-notes/categories/%E9%96%8B%E7%99%BA%E3%83%A1%E3%83%A2/ class="d-inline-block link-cta mb-4 text-uppercase">開発メモ</a><h1 class="mb-4 text-center">Python/TyperでCLIツール開発メモ</h1><p class="small mb-5 text-center"><span class=text-uppercase>January 30, 2021</span></p></div></div></div><div class="bg-skew bg-skew-light"><div class=container><div class="row justify-content-center"><div class=col-lg-8><article class=pb-2><ul><li>pythonでCLIツール作るときのライブラリとして，<a href=https://click.palletsprojects.com/en/7.x/>Click</a>が有名</li><li>これを更に簡単に使えるようにしたライブラリとして<a href=https://typer.tiangolo.com/>Typer</a>がある</li><li>これを使って開発したときにつまづいたところのメモ<ul><li>基本的な使い方は公式ドキュメントを読むのが一番よかった</li><li>下記の記事は公式に記載の情報の多くを抜粋・和訳してくれている
+<a href=https://qiita.com/iisaka51/items/18bde4dada0827fbe81e>オプション解析モジュール typer を使いこなそう - Qiita</a></li></ul></li></ul><h3 id=やりたいこと>やりたいこと</h3><ul><li>複数のサブコマンドをもつコマンドを作る<ul><li><code>foo</code>コマンドが，2つのサブコマンド<code>bar</code>と<code>baz</code>を持つ</li><li><code>bar</code>コマンドは，1機能しか持たない(サブコマンドを持たない)が，単体実行したいかつモジュール(実装ファイル)を分けたいのでサブコマンドとしたい</li><li><code>baz</code>コマンドは，さらに2つのサブコマンド<code>qux</code>と<code>corge</code>を持つ</li></ul></li></ul><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln>1</span><span class=c1># コマンドイメージ</span>
+<span class=ln>2</span>$ foo bar &lt;arg&gt;
+<span class=ln>3</span>...<span class=o>(</span>some output<span class=o>)</span>...
+<span class=ln>4</span>
+<span class=ln>5</span>$ foo baz qux &lt;arg&gt;
+<span class=ln>6</span>...<span class=o>(</span>some output<span class=o>)</span>...
+<span class=ln>7</span>
+<span class=ln>8</span>$ foo baz corge &lt;arg&gt;
+<span class=ln>9</span>...<span class=o>(</span>some output<span class=o>)</span>...
+</code></pre></div><ul><li>また，各サブコマンドは単体でも実行できるようにする</li></ul><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln>1</span><span class=c1># コマンドイメージ</span>
+<span class=ln>2</span>$ bar &lt;arg&gt;
+<span class=ln>3</span>...<span class=o>(</span>some output<span class=o>)</span>...
+<span class=ln>4</span>
+<span class=ln>5</span>$ baz qux &lt;arg&gt;
+<span class=ln>6</span>...<span class=o>(</span>some output<span class=o>)</span>...
+<span class=ln>7</span>
+<span class=ln>8</span>$ baz corge &lt;arg&gt;
+<span class=ln>9</span>...<span class=o>(</span>some output<span class=o>)</span>...
+</code></pre></div><ul><li>実装のファイル構成イメージは以下</li></ul><pre><code>my_cli
+├── commands
+│   ├── bar.py
+│   └── baz.py
+└── foo.py
+</code></pre><h3 id=つまづきポイント>つまづきポイント</h3><ul><li>Typerのコマンドは，登録されたコマンドが1つしかない場合，サブコマンドなしで実行できる</li></ul><h5 id=実装>実装</h5><div class=highlight><pre class=chroma><code class=language-python:commands/bar.py data-lang=python:commands/bar.py><span class=ln> 1</span><span class=kn>import</span> <span class=nn>typer</span>
+<span class=ln> 2</span>
+<span class=ln> 3</span><span class=n>barapp</span> <span class=o>=</span> <span class=n>typer</span><span class=o>.</span><span class=n>Typer</span><span class=p>(</span><span class=n>add_completion</span><span class=o>=</span><span class=bp>False</span><span class=p>)</span>
+<span class=ln> 4</span>
+<span class=ln> 5</span>
+<span class=ln> 6</span><span class=nd>@barapp.command</span><span class=p>()</span>
+<span class=ln> 7</span><span class=k>def</span> <span class=nf>main</span><span class=p>(</span><span class=n>arg</span><span class=p>:</span> <span class=nb>str</span><span class=p>):</span>
+<span class=ln> 8</span>    <span class=n>typer</span><span class=o>.</span><span class=n>echo</span><span class=p>(</span><span class=n>f</span><span class=s2>&#34;This is bar command: {arg}&#34;</span><span class=p>)</span>
+<span class=ln> 9</span>
+<span class=ln>10</span>
+<span class=ln>11</span><span class=k>if</span> <span class=vm>__name__</span> <span class=o>==</span> <span class=s2>&#34;__main__&#34;</span><span class=p>:</span>
+<span class=ln>12</span>    <span class=n>barapp</span><span class=p>()</span>
+</code></pre></div><h5 id=実行結果>実行結果</h5><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln> 1</span>$ python commands/bar.py --help
+<span class=ln> 2</span>Usage: bar.py <span class=o>[</span>OPTIONS<span class=o>]</span> ARG
+<span class=ln> 3</span>
+<span class=ln> 4</span>Arguments:
+<span class=ln> 5</span>  ARG  <span class=o>[</span>required<span class=o>]</span>
+<span class=ln> 6</span>
+<span class=ln> 7</span>Options:
+<span class=ln> 8</span>  --help  Show this message and exit.
+<span class=ln> 9</span>
+<span class=ln>10</span>$ python commands/bar.py hoge
+<span class=ln>11</span>This is bar command: hoge
+</code></pre></div><ul><li>しかし，このコマンドを，他のコマンドのサブコマンドとして登録すると，サブコマンドなしで実行できなくなる</li></ul><h5 id=実装-1>実装</h5><div class=highlight><pre class=chroma><code class=language-python:foo.py data-lang=python:foo.py><span class=ln> 1</span><span class=kn>import</span> <span class=nn>typer</span>
+<span class=ln> 2</span><span class=kn>from</span> <span class=nn>commands</span> <span class=kn>import</span> <span class=n>bar</span>
+<span class=ln> 3</span>
+<span class=ln> 4</span><span class=n>fooapp</span> <span class=o>=</span> <span class=n>typer</span><span class=o>.</span><span class=n>Typer</span><span class=p>(</span><span class=n>add_completion</span><span class=o>=</span><span class=bp>False</span><span class=p>)</span>
+<span class=ln> 5</span><span class=n>fooapp</span><span class=o>.</span><span class=n>add_typer</span><span class=p>(</span><span class=n>bar</span><span class=o>.</span><span class=n>barapp</span><span class=p>,</span> <span class=n>name</span><span class=o>=</span><span class=s2>&#34;bar&#34;</span><span class=p>)</span>
+<span class=ln> 6</span><span class=n>fooapp</span><span class=o>.</span><span class=n>add_typer</span><span class=p>(</span><span class=n>baz</span><span class=o>.</span><span class=n>bazapp</span><span class=p>,</span> <span class=n>name</span><span class=o>=</span><span class=s2>&#34;baz&#34;</span><span class=p>)</span>
+<span class=ln> 7</span>
+<span class=ln> 8</span>
+<span class=ln> 9</span><span class=k>if</span> <span class=vm>__name__</span> <span class=o>==</span> <span class=s2>&#34;__main__&#34;</span><span class=p>:</span>
+<span class=ln>10</span>    <span class=n>fooapp</span><span class=p>()</span>
+</code></pre></div><h5 id=実行結果-1>実行結果</h5><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln> 1</span>$ python foo.py bar --help
+<span class=ln> 2</span>Usage: foo.py bar <span class=o>[</span>OPTIONS<span class=o>]</span> COMMAND <span class=o>[</span>ARGS<span class=o>]</span>...
+<span class=ln> 3</span>
+<span class=ln> 4</span>Options:
+<span class=ln> 5</span>  --help  Show this message and exit.
+<span class=ln> 6</span>
+<span class=ln> 7</span>Commands:
+<span class=ln> 8</span>  main
+<span class=ln> 9</span>
+<span class=ln>10</span><span class=c1># `foo bar hoge` は実行不可</span>
+<span class=ln>11</span>$ python foo.py bar main hoge
+<span class=ln>12</span>This is bar command: hoge
+</code></pre></div><h3 id=解決>解決</h3><ul><li><code>fooapp.add_typer(...)</code>でtyperごと登録するのはだめなので，<code>fooapp.command(name=&lt;サブコマンド名>)(&lt;外部定義関数>)</code>で外部ファイルの関数だけ登録する</li></ul><h5 id=実装-2>実装</h5><div class=highlight><pre class=chroma><code class=language-python:foo.py data-lang=python:foo.py><span class=ln> 1</span><span class=kn>import</span> <span class=nn>typer</span>
+<span class=ln> 2</span><span class=kn>from</span> <span class=nn>commands</span> <span class=kn>import</span> <span class=n>bar</span>
+<span class=ln> 3</span>
+<span class=ln> 4</span><span class=n>fooapp</span> <span class=o>=</span> <span class=n>typer</span><span class=o>.</span><span class=n>Typer</span><span class=p>(</span><span class=n>add_completion</span><span class=o>=</span><span class=bp>False</span><span class=p>)</span>
+<span class=ln> 5</span><span class=c1># fooapp.add_typer(bar.barapp, name=&#34;bar&#34;)</span>
+<span class=ln> 6</span><span class=n>fooapp</span><span class=o>.</span><span class=n>command</span><span class=p>(</span><span class=n>name</span><span class=o>=</span><span class=s2>&#34;bar&#34;</span><span class=p>)(</span><span class=n>bar</span><span class=o>.</span><span class=n>main</span><span class=p>)</span>
+<span class=ln> 7</span><span class=n>fooapp</span><span class=o>.</span><span class=n>add_typer</span><span class=p>(</span><span class=n>baz</span><span class=o>.</span><span class=n>bazapp</span><span class=p>,</span> <span class=n>name</span><span class=o>=</span><span class=s2>&#34;baz&#34;</span><span class=p>)</span>
+<span class=ln> 8</span>
+<span class=ln> 9</span>
+<span class=ln>10</span><span class=k>if</span> <span class=vm>__name__</span> <span class=o>==</span> <span class=s2>&#34;__main__&#34;</span><span class=p>:</span>
+<span class=ln>11</span>    <span class=n>fooapp</span><span class=p>()</span>
+</code></pre></div><h5 id=実行結果-2>実行結果</h5><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln> 1</span>$ python foo.py bar --help
+<span class=ln> 2</span>Usage: foo.py <span class=o>[</span>OPTIONS<span class=o>]</span> ARG
+<span class=ln> 3</span>
+<span class=ln> 4</span>Arguments:
+<span class=ln> 5</span>  ARG  <span class=o>[</span>required<span class=o>]</span>
+<span class=ln> 6</span>
+<span class=ln> 7</span>Options:
+<span class=ln> 8</span>  --help  Show this message and exit.
+<span class=ln> 9</span>
+<span class=ln>10</span>$ python foo.py bar hoge
+<span class=ln>11</span>This is bar command: hoge
+</code></pre></div><h3 id=実装例>実装例</h3><ul><li><code>python foo.py baz ...</code>も含めた実装例は以下<ul><li><a href=https://github.com/jagijagijag1/typer-subcommand-sample>GitHub - jagijagijag1/typer-subcommand-sample</a></li></ul></li></ul><p class="mt-5 text-center"><span class=text-secondary>Tagged:</span>
+<a href=https://jagijagijag1.github.io/tiny-notes/tags/python/ class="link-tag text-dark">#Python</a>
+<a href=https://jagijagijag1.github.io/tiny-notes/tags/typer/ class="link-tag text-dark">#Typer</a>
+<a href=https://jagijagijag1.github.io/tiny-notes/tags/cli/ class="link-tag text-dark">#CLI</a></p></article><div class="row pt-5 pb-5"><div class="col-6 text-left"><a class=text-reset href=https://jagijagijag1.github.io/tiny-notes/posts/2021_01_11_22_09_22/>&larr; RESTler: Stateful REST API Fuzzing</a></div><div class="col-6 text-right"></div></div></div></div></div></div></main><footer class="site-footer mt-5"><div class=container><div class="row justify-content-md-between"><div class="col-sm-12 col-md-4 mb-4"><h2 class="h5 mb-3">jagijagijag1 tiny tech notes</h2><p>Tiny fragments for my tech activities. More cohesive articles are on https://jagijagijag1.github.io/blog/</p></div><section id=pixela_access_counter class="col-sm-12 col-md-4 mb-4"><header><h5>Blog PVs</h5></header><div id=svg-load-area style="border:1px solid rgba(161,161,161,.3)"></div><div style=text-align:right>Powered by <a href=https://pixe.la/ target=_blank>Pixela</a></div></section><script src=https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js></script><script src=https://unpkg.com/tippy.js@3/dist/tippy.all.min.js></script><script>document.addEventListener('DOMContentLoaded',function(){$('#svg-load-area').load('https:\/\/pixe.la\/v1\/users\/jagijagijag1\/graphs\/qrunch-pv?mode=short',function(){tippy('.each-day',{arrow:true});});});</script><div class="col-4 col-md-2 mb-4"><h2 class="h5 mb-3">Menu</h2><ul class="nav flex-column"><li class=mb-1><a href=https://jagijagijag1.github.io/tiny-notes/ class=text-secondary>Home</a></li><li class=mb-1><a href=https://jagijagijag1.github.io/blog/ class=text-secondary>Blog (external)</a></li></ul></div></div><hr><div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-center"><div class="text-muted mb-3"><a href=https://10mohi6.tk class=text-reset>design</a> <a href=https://github.com/10mohi6/hugo-theme-simple-blog class=text-reset>theme</a></p></div></div></div></footer><script src=https://jagijagijag1.github.io/tiny-notes/js/add-on.js></script></body></html>
