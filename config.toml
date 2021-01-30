@@ -11,6 +11,8 @@ paginate = 15
 # enableInlineShortcodes = true
 # footnoteReturnLinkContents = "^"
 
+pygmentsUseClasses = true
+
 hasCJKLanguage  = true
 googleAnalytics = "UA-22200830-1"
 
@@ -30,3 +32,17 @@ tag = "tags"
 description = "Tiny fragments for my tech activities. More cohesive articles are on https://jagijagijag1.github.io/blog/"
 pixelaAccessCounter = true
 pixelaACGraphURL    = "https://pixe.la/v1/users/jagijagijag1/graphs/qrunch-pv?mode=short"
+
+[markup]
+  [markup.highlight]
+    anchorLineNos = false
+    codeFences = true
+    guessSyntax = false
+    hl_Lines = ""
+    lineAnchors = ""
+    lineNoStart = 1
+    lineNos = true
+    lineNumbersInTable = false
+    noClasses = true
+    style = "dracula"
+    tabWidth = 4
