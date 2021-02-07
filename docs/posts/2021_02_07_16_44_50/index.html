@@ -1,0 +1,99 @@
+<!doctype html><html lang=ja-jp><head><title>API Fuzzing toolのRESTlerを動かす - jagijagijag1 tiny tech notes</title><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1,shrink-to-fit=no"><link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel=stylesheet><link rel=stylesheet href=https://jagijagijag1.github.io/tiny-notes/css/bootstrap.css><link rel=stylesheet href=https://jagijagijag1.github.io/tiny-notes/css/custom.css><link rel=stylesheet href=https://jagijagijag1.github.io/tiny-notes/css/add-on.css><link rel=stylesheet href=https://jagijagijag1.github.io/tiny-notes/css/syntax.css></head><body><main id=main><div class=container><div class="row justify-content-center text-center my-5"><div class=col-lg-10><a href=https://jagijagijag1.github.io/tiny-notes/categories/%E9%96%8B%E7%99%BA%E3%83%A1%E3%83%A2/ class="d-inline-block link-cta mb-4 text-uppercase">開発メモ</a><h1 class="mb-4 text-center">API Fuzzing toolのRESTlerを動かす</h1><p class="small mb-5 text-center"><span class=text-uppercase>February 7, 2021</span></p></div></div></div><div class="bg-skew bg-skew-light"><div class=container><div class="row justify-content-center"><div class=col-lg-8><article class=pb-2><h2 id=restlerとは>RESTlerとは</h2><blockquote><p>RESTler is the first stateful REST API fuzzing tool for automatically testing cloud services through their REST APIs and finding security and reliability bugs in these services. For a given cloud service with an OpenAPI/Swagger specification, RESTler analyzes its entire specification, and then generates and executes tests that exercise the service through its REST API.</p></blockquote><ul><li>Microsoft製のFuzzing toolで，状態を持つ処理シーケンスを扱えるのが特徴 (状態を扱える＝API呼び出し→その結果を受けて次のAPI呼び出し，のような流れをテストできる)<ul><li>一番大元の論文のメモは→<a href=https://jagijagijag1.github.io/tiny-notes/posts/2021_01_11_22_09_22/>RESTler: Stateful REST API Fuzzing - jagijagijag1 tiny tech notes</a></li><li>OSSで公開されている→<a href=https://github.com/microsoft/restler-fuzzer>GitHub - microsoft/restler-fuzzer: RESTler is the first stateful REST API fuzzing tool for automatically testing cloud services through their REST APIs and finding security and reliability bugs in these services.</a></li></ul></li><li>FazzingについてはIPAのサイトに概要あり<ul><li><a href=https://www.ipa.go.jp/security/vuln/fuzzing.html>脆弱性対策：ファジング：IPA 独立行政法人 情報処理推進機構</a></li></ul></li><li>Windows/Linux 64-bitのみ対応なので，macOS上でDockerを使って動かしてみた例をメモ</li></ul><h2 id=環境>環境</h2><ul><li>macOS Catelina</li><li>Docker Engine - Community<ul><li>Version: 20.10.2</li></ul></li></ul><h2 id=実行環境コンテナ準備>実行環境コンテナ準備</h2><h3 id=net-sdk入りdockerイメージ取得>.NET SDK入りDockerイメージ取得</h3><ul><li>.NET core SDK 3.1が必要なので，下記のMicrosoft公式イメージを利用<ul><li><a href=https://hub.docker.com/_/microsoft-dotnet-sdk/>.NET SDK | Docker Hub</a></li><li>下記コマンドだとOSはDebian 10</li><li>他のOSにしたい場合はDokcer Hubに記載のタグを指定</li></ul></li></ul><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln>1</span>$ docker pull mcr.microsoft.com/dotnet/sdk:3.1 
+<span class=ln>2</span>$ docker images
+<span class=ln>3</span>REPOSITORY                     TAG     IMAGE ID       CREATED         SIZE
+<span class=ln>4</span>mcr.microsoft.com/dotnet/sdk   3.1     52a3845cafb1   <span class=m>4</span> days ago      710MB
+<span class=ln>5</span>...
+</code></pre></div><h3 id=コンテナ起動>コンテナ起動</h3><ul><li>コンテナを立ち上げてbashに入る (お試しなのでDockerfile化せず直接作業)</li></ul><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln>1</span>$ docker run -it -d --name restler-test mcr.microsoft.com/dotnet/sdk:3.1
+<span class=ln>2</span>$ docker <span class=nb>exec</span> -it restler-test /bin/bash
+</code></pre></div><h3 id=python-382インストール>Python 3.8.2インストール</h3><ul><li>Python 3.8.2が必要なのでインストール
+(お試しなのでrootユーザのままで作業，以下コマンド例はroot実行だが先頭シンボルは$で記載)</li><li>3.7しかリポジトリにないようなので下記を参考にインストール<ul><li><a href=https://stackoverflow.com/questions/62830862/how-to-install-python3-8-on-debian-10>python - How to Install python3.8 on debian 10? - Stack Overflow</a></li></ul></li></ul><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln> 1</span>$ apt update
+<span class=ln> 2</span>$ apt install build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libsqlite3-dev libreadline-dev libffi-dev curl libbz2-dev
+<span class=ln> 3</span>$ <span class=nb>cd</span> ~
+<span class=ln> 4</span>$ curl -O https://www.python.org/ftp/python/3.8.2/Python-3.8.2.tar.xz
+<span class=ln> 5</span>$ tar -xf Python-3.8.2.tar.xz
+<span class=ln> 6</span>$ <span class=nb>cd</span> Python-3.8.2
+<span class=ln> 7</span>$ ./configure --enable-optimizations
+<span class=ln> 8</span>$ nproc
+<span class=ln> 9</span><span class=m>3</span>
+<span class=ln>10</span>$ make -j <span class=m>3</span>
+<span class=ln>11</span>$ make install
+<span class=ln>12</span>$ python3 --version
+<span class=ln>13</span>Pyhon 3.8.2
+</code></pre></div><h3 id=pythonコマンドの設定><code>python</code>コマンドの設定</h3><ul><li>RESTlerの処理の中では，<code>python</code>コマンドで自身の持つスクリプトを実行する</li><li>ここまで設定した状態では，<code>python</code>コマンドがPython 2.7.x，<code>python3</code>コマンドががPython 3.8.xをさしているはず</li><li>そのため，下記などにて<code>python</code>コマンドでPython 3.8.xが実行されるような設定が必要<ul><li><code>alias python="python3"</code>だとRESTler実行時に反映されないようでだめだった</li></ul></li></ul><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln> 1</span>$ which python
+<span class=ln> 2</span>/usr/bin/python
+<span class=ln> 3</span>
+<span class=ln> 4</span>$ ls -la /usr/bin/python
+<span class=ln> 5</span>lrwxrwxrwx <span class=m>1</span> root root       <span class=m>7</span> Mar  <span class=m>4</span>  <span class=m>2019</span> /usr/bin/python -&gt; python2
+<span class=ln> 6</span>
+<span class=ln> 7</span>$ which python3
+<span class=ln> 8</span>/usr/local/bin/python3
+<span class=ln> 9</span>
+<span class=ln>10</span>$ ln -fs /usr/local/bin/python3 /usr/bin/python
+<span class=ln>11</span>
+<span class=ln>12</span>$ ls -la /usr/bin/python
+<span class=ln>13</span>lrwxrwxrwx <span class=m>1</span> root root <span class=m>22</span> Jan <span class=m>27</span> 05:35 /usr/bin/python -&gt; /usr/local/bin/python3
+<span class=ln>14</span>
+<span class=ln>15</span>$ python --version
+<span class=ln>16</span>Python 3.8.2
+</code></pre></div><h2 id=restlerインストール>RESTlerインストール</h2><ul><li>READMEに従い下記を実行</li></ul><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln>1</span>$ git clone https://github.com/microsoft/restler-fuzzer.git
+<span class=ln>2</span>$ <span class=nb>cd</span> restler-fuzzer/
+<span class=ln>3</span>$ python3 ./build-restler.py --dest_dir ~/restler_bin <span class=c1>#RESTlerファイル一式をおく任意のpath</span>
+</code></pre></div><h2 id=チュートリアル>チュートリアル</h2><ul><li>下記に従って動かしてみる<ul><li><a href=https://github.com/microsoft/restler-fuzzer/blob/main/docs/user-guide/TutorialDemoServer.md>restler-fuzzer/TutorialDemoServer.md at main · microsoft/restler-fuzzer · GitHub</a></li></ul></li><li>デモ対象はブログの記事管理API<ul><li><code>&lt;cloneしたrestler-fuzzerのpath>/demo_server/swagger.json</code>で定義されている</li><li>例えば<code>GET /blog/posts</code>で記事一覧取得</li></ul></li></ul><h3 id=0-デモサーバ準備>0. デモサーバ準備</h3><ul><li>まずFuzzing対象とするサーバを起動する必要あり<ul><li><code>demo_server/README.md</code>を参照</li></ul></li><li>Python環境を構築してサーバ起動</li></ul><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln>1</span>$ <span class=nb>cd</span> &lt;cloneしたrestler-fuzzerのpath&gt;/demo_server
+<span class=ln>2</span>$ python -m venv venv
+<span class=ln>3</span>$ <span class=nb>source</span> venv/bin/activate
+<span class=ln>4</span>$ pip install -r requirements.txt
+<span class=ln>5</span>$ python demo_server/app.py
+</code></pre></div><h3 id=1-compile>1. Compile</h3><ul><li>Swagger定義をRESTlerで解釈できる形式に変換する</li></ul><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln>1</span>$ mkdir ~/restler-test
+<span class=ln>2</span>$ <span class=nb>cd</span> <span class=nv>$_</span>
+<span class=ln>3</span>$ cp &lt;cloneしたrestler-fuzzerのpath&gt;/demo_server/swagger.json .
+<span class=ln>4</span>$ ~/restler_bin/restler/Restler compile --api_spec swagger.json
+</code></pre></div><ul><li><code>restler-fuzzer/demo_server/Compile</code>の下に結果が出力される<ul><li>例えば<code>grammar.json</code>に，RESTlerでSwagger定義を解釈した結果を保持</li><li>例えば<code>dict.json</code>はfuzzingで使うパラメタ定義</li></ul></li></ul><div class=highlight><pre class=chroma><code class=language-json:dict.json data-lang=json:dict.json><span class=ln> 1</span><span class=p>{</span>
+<span class=ln> 2</span>  <span class=nt>&#34;restler_fuzzable_string&#34;</span><span class=p>:</span> <span class=p>[</span>
+<span class=ln> 3</span>    <span class=s2>&#34;fuzzstring&#34;</span>
+<span class=ln> 4</span>  <span class=p>],</span>
+<span class=ln> 5</span>  <span class=err>...</span>
+<span class=ln> 6</span>  <span class=nt>&#34;restler_fuzzable_uuid4&#34;</span><span class=p>:</span> <span class=p>[</span>
+<span class=ln> 7</span>    <span class=s2>&#34;903bcc44-30cf-4ea7-968a-d9d0da7c072f&#34;</span>
+<span class=ln> 8</span>  <span class=p>],</span>
+<span class=ln> 9</span>  <span class=nt>&#34;restler_fuzzable_uuid4_unquoted&#34;</span><span class=p>:</span> <span class=p>[],</span>
+<span class=ln>10</span>  <span class=nt>&#34;restler_fuzzable_int&#34;</span><span class=p>:</span> <span class=p>[</span>
+<span class=ln>11</span>    <span class=s2>&#34;0&#34;</span><span class=p>,</span>
+<span class=ln>12</span>    <span class=s2>&#34;1&#34;</span>
+<span class=ln>13</span>  <span class=p>],</span>
+<span class=ln>14</span>  <span class=nt>&#34;restler_fuzzable_number&#34;</span><span class=p>:</span> <span class=p>[</span>
+<span class=ln>15</span>    <span class=s2>&#34;0.1&#34;</span><span class=p>,</span>
+<span class=ln>16</span>    <span class=s2>&#34;1.2&#34;</span>
+<span class=ln>17</span>  <span class=p>],</span>
+<span class=ln>18</span>  <span class=nt>&#34;restler_fuzzable_bool&#34;</span><span class=p>:</span> <span class=p>[</span>
+<span class=ln>19</span>    <span class=s2>&#34;true&#34;</span>
+<span class=ln>20</span>  <span class=p>],</span>
+<span class=ln>21</span>  <span class=err>...</span>
+<span class=ln>22</span><span class=p>}</span>
+</code></pre></div><h3 id=2-test>2. Test</h3><ul><li>各エンドポイント・メソッドに対しアクセス可能か，レスポンス受け取れるかテスト</li></ul><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln>1</span>$ ~/restler_bin/restler/Restler <span class=nb>test</span> --grammar_file Compile/grammar.py --dictionary_file Compile/dict.json --settings Compile/engine_settings.json --no_ssl
+<span class=ln>2</span>Log share was not specified.  Logs will not be uploaded.
+<span class=ln>3</span>Starting task Test...
+<span class=ln>4</span>Request coverage <span class=o>(</span>successful / total<span class=o>)</span>: <span class=m>5</span> / <span class=m>6</span>
+<span class=ln>5</span>No bugs were found.
+<span class=ln>6</span>Task Test succeeded.
+<span class=ln>7</span>Collecting logs...
+</code></pre></div><ul><li>成功すると，5/6のリクエストが成功したことが出力される<ul><li>デモサーバを正常に起動できていないと全リクエストが失敗になる</li></ul></li><li>Tutorialページでは<code>GET /blog/posts?per_page=</code>で失敗するとあるが，自分の環境では<code>PUT /blog/posts/{post_id}</code>で失敗していた<ul><li>ペイロードの<code>id</code>に文字列を入れてしまって404ぽい</li><li>直し方は詳細調べないと不明</li></ul></li></ul><h3 id=3-fuzz-lean>3. Fuzz-lean</h3><ul><li>各エンドポイント・メソッドに一度だけチェックをかける<ul><li>説明には<code>a default set of checkers</code>とあるがなんのことか不明</li></ul></li></ul><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln> 1</span>$ ~/restler_bin/restler/Restler fuzz-lean --grammar_file Compile/grammar.py --dictionary_file Compile/dict.json --settings Compile/engine_settings.json --no_ssl
+<span class=ln> 2</span>Log share was not specified.  Logs will not be uploaded.
+<span class=ln> 3</span>Starting task FuzzLean...
+<span class=ln> 4</span>
+<span class=ln> 5</span>ERROR: Results analyzer <span class=k>for</span> logs in /root/restler-test/FuzzLean failed.
+<span class=ln> 6</span>
+<span class=ln> 7</span>Request coverage <span class=o>(</span>successful / total<span class=o>)</span>: <span class=m>5</span> / <span class=m>6</span>
+<span class=ln> 8</span>Bugs were found!
+<span class=ln> 9</span>Bug buckets:
+<span class=ln>10</span>
+<span class=ln>11</span>InvalidDynamicObjectChecker_20x: <span class=m>1</span>
+<span class=ln>12</span>InvalidDynamicObjectChecker_500: <span class=m>1</span>
+<span class=ln>13</span>PayloadBodyChecker_500: <span class=m>1</span>
+<span class=ln>14</span>Task FuzzLean succeeded.
+<span class=ln>15</span>Collecting logs...
+</code></pre></div><ul><li><p>検出されたバグの情報は<code>FizzLean/RestlerResults/experiment&lt;...>/bug_buckets</code>に出力</p><ul><li><code>bug_buckets.txt</code>にサマリ</li><li><code>InvalidDynamicObjectChecker_20x_1.txt</code>などに個別バグのもう少し詳細<ul><li>このログのテキストファイルを入力にしてRESTlerを実行すれば，同じバグの再現が可能 (<code>--replay_log</code>オプション)</li></ul></li><li>ここでは3つのバグ発見</li></ul></li><li><p>以下，発見されたバグの解説</p></li></ul><h5 id=invaliddynamicobjectchecker_20x><code>InvalidDynamicObjectChecker_20x</code></h5><ul><li>まずブログ記事をPOST→レスポンスとして記事ID取得</li><li>その後，当該IDを用いてブログ記事をGET，ただしFuzzerで余分なクエリ文字列付与<ul><li>具体的には，<code>GET /api/blog/posts/&lt;ID></code>とするところを，<code>GET /api/blog/posts/&lt;ID>?inject_query_stirng=123</code>としてリクエスト発行</li></ul></li><li>エラー発生を期待してFuzzerで余計な情報を付け足したにもかかわらず，200系のレスポンスが返ってきてしまったのでバグと判定</li></ul><h5 id=invaliddynamicobjectchecker_500><code>InvalidDynamicObjectChecker_500</code></h5><ul><li>まず<code>InvalidDynamicObjectChecker_20x</code>のケースと同じくPOST→余計なクエリ文字列つけてGET</li><li>その後余計なクエリ文字列のところを<code>?inject_query_stirng=123</code>から<code>??</code>に変えてGET</li><li>すると，500 Internal Server Errorをレスポンスとして受け取ったので，バグと判定</li></ul><h5 id=payloadbodychecker_500><code>PayloadBodyChecker_500</code></h5><ul><li>まずブログ記事をPOST→レスポンスとして記事ID取得</li><li>その後，当該IDのブログ記事を更新するためのPUTするが，Fuzzerによりbodyから<code>id</code>と<code>checksum</code>が削除された状態でリクエストを発行</li><li>その結果，500 Internal Server Errorをレスポンスとして受け取ったので，バグと判定</li></ul><h3 id=4-fuzz>4. Fuzz</h3><ul><li>API呼び出しの組み合わせも含めてFuzzingする<ul><li><code>--time_budget</code>は実行する時間(hour単位)の指定</li><li>下記コマンドだと1時間実行される</li></ul></li></ul><div class=highlight><pre class=chroma><code class=language-bash data-lang=bash><span class=ln>1</span>$ ~/restler_bin/restler/Restler fuzz --grammar_file Compile/grammar.py --dictionary_file Compile/dict.json --settings Compile/engine_settings.json --no_ssl --time_budget <span class=m>1</span>
+</code></pre></div><ul><li>今回の例は小規模で複雑度が低いため，<code>FuzzLean</code>と同じバグしか発見していない</li></ul><h2 id=その他>その他</h2><ul><li>ドキュメント見るかぎり維持れる項目とか機能がまだまだありそう<ul><li><a href=https://github.com/microsoft/restler-fuzzer/tree/main/docs/user-guide>restler-fuzzer/docs/user-guide at main · microsoft/restler-fuzzer · GitHub</a></li></ul></li><li>実際に使うにはこの辺読まないとダメそう</li></ul><p class="mt-5 text-center"><span class=text-secondary>Tagged:</span>
+<a href=https://jagijagijag1.github.io/tiny-notes/tags/restler/ class="link-tag text-dark">#RESTler</a>
+<a href=https://jagijagijag1.github.io/tiny-notes/tags/rest-api/ class="link-tag text-dark">#REST API</a>
+<a href=https://jagijagijag1.github.io/tiny-notes/tags/api-testing/ class="link-tag text-dark">#API testing</a>
+<a href=https://jagijagijag1.github.io/tiny-notes/tags/fuzzing/ class="link-tag text-dark">#Fuzzing</a></p></article><div class="row pt-5 pb-5"><div class="col-6 text-left"><a class=text-reset href=https://jagijagijag1.github.io/tiny-notes/posts/2021_01_30_21_02_33/>&larr; Python/TyperでCLIツール開発メモ</a></div><div class="col-6 text-right"></div></div></div></div></div></div></main><footer class="site-footer mt-5"><div class=container><div class="row justify-content-md-between"><div class="col-sm-12 col-md-4 mb-4"><h2 class="h5 mb-3">jagijagijag1 tiny tech notes</h2><p>Tiny fragments for my tech activities. More cohesive articles are on https://jagijagijag1.github.io/blog/</p></div><section id=pixela_access_counter class="col-sm-12 col-md-4 mb-4"><header><h5>Blog PVs</h5></header><div id=svg-load-area style="border:1px solid rgba(161,161,161,.3)"></div><div style=text-align:right>Powered by <a href=https://pixe.la/ target=_blank>Pixela</a></div></section><script src=https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js></script><script src=https://unpkg.com/tippy.js@3/dist/tippy.all.min.js></script><script>document.addEventListener('DOMContentLoaded',function(){$('#svg-load-area').load('https:\/\/pixe.la\/v1\/users\/jagijagijag1\/graphs\/qrunch-pv?mode=short',function(){tippy('.each-day',{arrow:true});});});</script><div class="col-4 col-md-2 mb-4"><h2 class="h5 mb-3">Menu</h2><ul class="nav flex-column"><li class=mb-1><a href=https://jagijagijag1.github.io/tiny-notes/ class=text-secondary>Home</a></li><li class=mb-1><a href=https://jagijagijag1.github.io/blog/ class=text-secondary>Blog (external)</a></li></ul></div></div><hr><div class="d-flex flex-column flex-sm-row justify-content-sm-between align-items-center"><div class="text-muted mb-3"><a href=https://10mohi6.tk class=text-reset>design</a> <a href=https://github.com/10mohi6/hugo-theme-simple-blog class=text-reset>theme</a></p></div></div></div></footer><script src=https://jagijagijag1.github.io/tiny-notes/js/add-on.js></script></body></html>
